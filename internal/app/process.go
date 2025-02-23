@@ -84,6 +84,7 @@ func (seal *outcome) Run(ctx context.Context, rs *fst.RunState) error {
 				ec.Set(system.Process)
 				if states, err := c.Load(); err != nil {
 					// revert per-process state here to limit damage
+					fmsg.Verbosef("cannot load state entries: %v", err)
 					return errors.Join(err, seal.sys.Revert(ec))
 				} else {
 					if l := len(states); l == 0 {

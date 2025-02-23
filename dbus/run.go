@@ -149,6 +149,15 @@ func (p *Proxy) Wait() error {
 		errs[0] = nil
 	}
 
+	var exitError *exec.ExitError
+	if errors.As(errs[0], &exitError) &&
+		exitError != nil &&
+		exitError.Exited() &&
+		exitError.ExitCode() == -1 {
+		// exit due to signal
+		errs[0] = nil
+	}
+
 	// ensure socket removal so ephemeral directory is empty at revert
 	if err := os.Remove(p.session[1]); err != nil && !errors.Is(err, os.ErrNotExist) {
 		errs[1] = err
