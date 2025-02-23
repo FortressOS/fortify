@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -69,6 +70,10 @@ func (seal *outcome) Run(ctx context.Context, rs *fst.RunState) error {
 		storeErr.Inner, storeErr.DoErr = store.Do(seal.user.aid.unwrap(), func(c state.Cursor) {
 			revertErr = func() error {
 				storeErr.InnerErr = deferredStoreFunc(c)
+				if errors.Is(storeErr.InnerErr, os.ErrNotExist) {
+					fmsg.Verbose("duplicate state entry destruction")
+					storeErr.InnerErr = nil
+				}
 
 				/*
 					revert app setup transaction
